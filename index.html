@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+        <link rel="stylesheet" href='./public/stylesheets/main.css'>
+    </head>
+    <body>
+        <h1>SIMPLE CHAT</h1>
+        <div class="userArea">You have connected as:   <p class="nameInChat"></p>
+        </div>
+        <div class="chatArea"></div>
+        <input class="chatWindow">
+        <button class="sendData">SEND IT!</button>
+
+        <script>
+            const username = prompt();
+            document.querySelector('.nameInChat').innerText = username;
+            var socket = io('http://localhost:3000');
+            document.querySelector('.sendData').addEventListener('click', function(){
+                const text = document.querySelector('.chatWindow').value;
+                document.querySelector('.chatArea').innerHTML += `${new Date().toLocaleTimeString('en-GB', { hour: "numeric", 
+    minute: "numeric"})} ME:   ${text}<br>`;
+                socket.emit('send-message', { text:text,username:username });
+            });
+            socket.emit('new-user', {username:username });
+            socket.on('new-user-online',data=>{
+                document.querySelector('.chatArea').innerHTML += data;
+            })
+            socket.on('show-new-message',data=>{
+                document.querySelector('.chatArea').innerHTML += data;
+            })
+
+
+            window.onbeforeunload = closingCode;
+
+            function closingCode(){
+                socket.emit('user-left',{username:username});
+            }
+
+        </script>
+    </body>
+</html>
